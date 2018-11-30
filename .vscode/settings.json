@@ -1,0 +1,4 @@
+{
+  "git.autofetch": false,
+  "go.lintFlags": ["--disable-all"]
+}
