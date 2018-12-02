@@ -1,5 +1,10 @@
-package fw
+package component
+
+import (
+	"github.com/speier/gowasm/pkg/vdom"
+)
 
 type Component interface {
-	Render() *VNode
+	SetState()
+	Render() *vdom.VNode
 }

@@ -6,11 +6,9 @@ import (
 	"syscall/js"
 )
 
-type Ev = map[string]func([]js.Value)
-
-type Props = map[string]string
+type Events = map[string]func([]js.Value)
 
 type Attrs struct {
 	Props  *Props
-	Events *Ev
+	Events *Events
 }

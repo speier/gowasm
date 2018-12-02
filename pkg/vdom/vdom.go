@@ -13,6 +13,8 @@ const (
 	ElementNode
 )
 
+type Props = map[string]string
+
 type VNode struct {
 	Type     NodeType
 	TagName  string

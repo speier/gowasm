@@ -7,12 +7,12 @@ import (
 )
 
 var (
-	window   = js.Global().Get("window")
-	document = js.Global().Get("document")
+	Window   = js.Global().Get("window")
+	Document = js.Global().Get("document")
 )
 
 func QuerySelector(selector string) js.Value {
-	return document.Call("querySelector", selector)
+	return Document.Call("querySelector", selector)
 }
 
 var oldNode *vdom.VNode
@@ -26,7 +26,6 @@ func Patch(oldNode *vdom.VNode, newNode *vdom.VNode, container js.Value) *vdom.V
 	return newNode
 }
 
-// https://medium.com/@deathmood/how-to-write-your-own-virtual-dom-ee74acc13060
 func patchElement(oldNode *vdom.VNode, newNode *vdom.VNode, parent js.Value, index int) {
 	if oldNode == nil {
 		el := createElement(newNode)
@@ -49,16 +48,16 @@ func patchElement(oldNode *vdom.VNode, newNode *vdom.VNode, parent js.Value, ind
 	}
 }
 
-func changed(node1 *vdom.VNode, node2 *vdom.VNode) bool {
-	return node1.HashCode() != node2.HashCode()
+func changed(a *vdom.VNode, b *vdom.VNode) bool {
+	return a.HashCode() != b.HashCode()
 }
 
 func createElement(node *vdom.VNode) js.Value {
 	if node.Type == vdom.TextNode {
-		return document.Call("createTextNode", node.TagName)
+		return Document.Call("createTextNode", node.TagName)
 	}
 
-	el := document.Call("createElement", node.TagName)
+	el := Document.Call("createElement", node.TagName)
 
 	if node.Attrs != nil {
 		if node.Attrs.Props != nil {

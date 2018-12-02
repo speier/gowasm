@@ -14,7 +14,7 @@ import (
 	"github.com/go-chi/chi/middleware"
 
 	"github.com/speier/gowasm/examples/isomorphic/app"
-	"github.com/speier/gowasm/pkg/vdom"
+	"github.com/speier/gowasm/pkg/server"
 )
 
 var (
@@ -45,8 +45,8 @@ func main() {
 func index(box *rice.Box) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		initState := &app.State{Count: 9}
-		view := app.Init(initState)
-		html := vdom.RenderToString(view)
+		view := app.View(initState, nil)
+		html := server.RenderToString(view)
 		tmpl := template.Must(template.New("").Parse(box.MustString("index.html")))
 		jsonInitState, err := json.Marshal(initState)
 		if err != nil {
