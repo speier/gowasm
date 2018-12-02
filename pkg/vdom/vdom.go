@@ -15,6 +15,13 @@ const (
 
 type Props = map[string]string
 
+type Events = map[string]func()
+
+type Attrs struct {
+	Props  *Props
+	Events *Events
+}
+
 type VNode struct {
 	Type     NodeType
 	TagName  string
