@@ -1,6 +1,8 @@
 package vdom
 
 import (
+	"fmt"
+
 	"golang.org/x/net/html/atom"
 )
 
@@ -11,25 +13,32 @@ const (
 	ElementNode
 )
 
-type Attribute struct {
-	Key, Val string
-}
-
 type VNode struct {
 	Type     NodeType
-	Data     string
-	Attrs    []*Attribute
+	TagName  string
+	Attrs    *Attrs
 	Children []*VNode
 }
 
-func H(tagName string, attrs []*Attribute, children ...*VNode) *VNode {
+// hyperscript-style API: h(tagName, attrs, children)
+func H(tagName string, attrs *Attrs, children ...*VNode) *VNode {
 	a := atom.Lookup([]byte(tagName))
 	if a == 0 {
-		return &VNode{Type: TextNode, Data: tagName}
+		return &VNode{Type: TextNode, TagName: tagName}
 	}
-	return &VNode{Type: ElementNode, Data: tagName, Attrs: attrs, Children: children}
+	return &VNode{Type: ElementNode, TagName: tagName, Attrs: attrs, Children: children}
 }
 
-func HText(data string) *VNode {
-	return &VNode{Data: data}
+func Text(text string) *VNode {
+	return &VNode{TagName: text}
+}
+
+func (vnode *VNode) HashCode() string {
+	if vnode.Type == TextNode {
+		return vnode.TagName
+	}
+	if vnode.Attrs != nil && vnode.Attrs.Props != nil {
+		return fmt.Sprintf("%s/%v", vnode.TagName, *vnode.Attrs.Props)
+	}
+	return fmt.Sprintf("%s/%v", vnode.TagName, Attrs{})
 }

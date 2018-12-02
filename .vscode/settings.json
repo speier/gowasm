@@ -1,4 +1,5 @@
 {
   "git.autofetch": false,
-  "go.lintFlags": ["--disable-all"]
+  "go.lintFlags": ["--disable-all"],
+  "go.toolsEnvVars": { "GOARCH": "wasm", "GOOS": "js" }
 }
