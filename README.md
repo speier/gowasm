@@ -1,31 +1,45 @@
-## Go WASM
+# Go WASM
 
-...
+Toolkit for building web apps with Go and WebAssembly.
 
-### Dependencies
+At the core of the toolkit it's a lightweight UI library, consist of a hyperscript style api for building virtual dom nodes.
 
-```
-$ go get # GO111MODULE=on
-```
+Modular components supports to render virtual dom nodes to an HTML string on the server, and DOM elements in the browser (with patching and possible hydration).
 
-### Examples
+## Getting Started
 
-Generate:
+Install dependencies:
 
-```
-$ go generate ./examples/...
+```sh
+$ GO111MODULE=on go get
 ```
 
-Run the _isomorphic_ example:
+Writing components:
 
+```go
+func main() {
+	view := vdom.H("div", nil,
+		vdom.H("h1", nil, vdom.Text("Hello World!")),
+	)
+
+	dom.Render(view, dom.QuerySelector("#root"))
+}
 ```
+
+## Examples
+
+To run the [isomorphic](examples/isomorphic) example generate WebAssembly:
+
+```sh
+$ go generate ./examples/isomorphic/...
+```
+
+and run the server:
+
+```sh
 $ go run examples/isomorphic/server.go
 ```
 
-### Resources
-
-- [https://medium.com/@deathmood/how-to-write-your-own-virtual-dom-ee74acc13060](https://medium.com/@deathmood/how-to-write-your-own-virtual-dom-ee74acc13060)
-
-### License
+## License
 
 [MIT](LICENSE)
