@@ -3,6 +3,7 @@ package main
 //go:generate sh -c "GOOS=js GOARCH=wasm go build -o ../static/app.wasm ."
 
 import (
+	"encoding/json"
 	"syscall/js"
 
 	"github.com/speier/gowasm/pkg/dom"
@@ -12,9 +13,13 @@ import (
 )
 
 func main() {
-	state := &app.State{Count: 0}
-	actions := &app.Actions{}
+	window := js.Global().Get("window")
+	initState := []byte(window.Get("initialState").String())
 
+	var state *app.State
+	json.Unmarshal(initState, &state)
+
+	actions := &app.Actions{}
 	App(state, actions, app.View, dom.QuerySelector("#root"))
 }
 

@@ -7,7 +7,7 @@ import (
 )
 
 type State struct {
-	Count int
+	Count int `json:"count"`
 }
 
 type Actions struct {

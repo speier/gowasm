@@ -44,7 +44,7 @@ func main() {
 
 func index(box *rice.Box) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		initState := &app.State{Count: 9}
+		initState := &app.State{Count: 1}
 		view := app.View(initState, nil)
 		html := server.RenderToString(view)
 		tmpl := template.Must(template.New("").Parse(box.MustString("index.html")))
