@@ -6,6 +6,6 @@ if (!WebAssembly.instantiateStreaming) { // polyfill
 }
 (async () => {
     const go = new Go();
-    const { instance } = await WebAssembly.instantiateStreaming(fetch('basic.wasm'), go.importObject);
+    const { instance } = await WebAssembly.instantiateStreaming(fetch('/app.wasm'), go.importObject);
     await go.run(instance);
 })();

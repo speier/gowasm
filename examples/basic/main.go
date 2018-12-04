@@ -12,15 +12,26 @@ import (
 )
 
 func main() {
-	// A Simple Component
+	// create nodes for demo components below
+	client.Render(sandbox, dom.QuerySelector("body"))
+
+	// simple component
 	client.Render(HelloMessage("World!"), dom.QuerySelector("#s1"))
 
-	// A Stateful Component
+	// stateful component
 	go client.Mount(TimerFn(0), dom.QuerySelector("#s2"))
 	client.Mount(Timer(0), dom.QuerySelector("#s3"))
 }
 
 var h = vdom.H
+
+func sandbox() *vdom.VNode {
+	return h("div", nil,
+		h("div", &vdom.Attrs{Props: &vdom.Props{"id": "s1"}}),
+		h("div", &vdom.Attrs{Props: &vdom.Props{"id": "s2"}}),
+		h("div", &vdom.Attrs{Props: &vdom.Props{"id": "s3"}}),
+	)
+}
 
 func HelloMessage(name string) *vdom.VNode {
 	return h("h2", nil, h("Hello ", nil), h(name, nil))

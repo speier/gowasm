@@ -9,8 +9,13 @@ import (
 	"github.com/speier/gowasm/pkg/vdom"
 )
 
-func Render(view *vdom.VNode, container js.Value) {
-	dom.Render(view, container)
+func Render(i interface{}, container js.Value) {
+	switch v := i.(type) {
+	case *vdom.VNode:
+		dom.Render(v, container)
+	case func() *vdom.VNode:
+		dom.Render(v(), container)
+	}
 }
 
 type client struct {
