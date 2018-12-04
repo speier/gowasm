@@ -2,6 +2,7 @@ package vdom
 
 import (
 	"fmt"
+	"strings"
 
 	"golang.org/x/net/html/atom"
 )
@@ -31,17 +32,18 @@ type VNode struct {
 
 // hyperscript-style API: h(tagName, attrs, children)
 func H(tagName string, attrs *Attrs, children ...*VNode) *VNode {
-	a := atom.Lookup([]byte(tagName))
+	a := atom.Lookup([]byte(strings.ToLower(tagName)))
 	if a == 0 {
-		return &VNode{Type: TextNode, TagName: tagName}
+		return Text(tagName)
 	}
-	return &VNode{Type: ElementNode, TagName: tagName, Attrs: attrs, Children: children}
+	return &VNode{Type: ElementNode, TagName: strings.ToLower(tagName), Attrs: attrs, Children: children}
 }
 
 func Text(text string) *VNode {
-	return &VNode{TagName: text}
+	return &VNode{Type: TextNode, TagName: text}
 }
 
+// TODO
 func (vnode *VNode) HashCode() string {
 	if vnode.Type == TextNode {
 		return vnode.TagName

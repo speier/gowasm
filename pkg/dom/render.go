@@ -8,15 +8,18 @@ import (
 )
 
 var (
-	document = js.Global().Get("document")
+	Window   = js.Global().Get("window")
+	Document = js.Global().Get("document")
+
 	_oldNode *vdom.VNode
 )
 
 func QuerySelector(selector string) js.Value {
-	return document.Call("querySelector", selector)
+	return Document.Call("querySelector", selector)
 }
 
 func Render(node *vdom.VNode, container js.Value) {
+	_oldNode = nil
 	recycle(container)
 	_oldNode = Patch(_oldNode, node, container)
 }
@@ -27,7 +30,9 @@ func Patch(oldNode *vdom.VNode, newNode *vdom.VNode, container js.Value) *vdom.V
 }
 
 func patchElement(oldNode *vdom.VNode, newNode *vdom.VNode, parent js.Value, index int) {
-	if oldNode == nil {
+	if oldNode == nil && newNode == nil {
+		return
+	} else if oldNode == nil {
 		el := createElement(newNode)
 		parent.Call("appendChild", el)
 	} else if newNode == nil {
@@ -54,10 +59,10 @@ func changed(a *vdom.VNode, b *vdom.VNode) bool {
 
 func createElement(node *vdom.VNode) js.Value {
 	if node.Type == vdom.TextNode {
-		return document.Call("createTextNode", node.TagName)
+		return Document.Call("createTextNode", node.TagName)
 	}
 
-	el := document.Call("createElement", node.TagName)
+	el := Document.Call("createElement", node.TagName)
 
 	if node.Attrs != nil {
 		if node.Attrs.Props != nil {
@@ -68,7 +73,7 @@ func createElement(node *vdom.VNode) js.Value {
 
 		if node.Attrs.Events != nil {
 			for eventName, handler := range *node.Attrs.Events {
-				callback := js.NewCallback(func(args []js.Value) { handler() })
+				callback := js.NewEventCallback(0, func(event js.Value) { handler() })
 				el.Call("addEventListener", eventName, callback)
 			}
 		}

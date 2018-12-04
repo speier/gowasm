@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"syscall/js"
 
+	"github.com/speier/gowasm/pkg/client"
 	"github.com/speier/gowasm/pkg/dom"
 	"github.com/speier/gowasm/pkg/vdom"
 
@@ -13,8 +14,7 @@ import (
 )
 
 func main() {
-	window := js.Global().Get("window")
-	initState := []byte(window.Get("initialState").String())
+	initState := []byte(dom.Window.Get("initialState").String())
 
 	var state *app.State
 	json.Unmarshal(initState, &state)
@@ -37,5 +37,5 @@ func App(state *app.State, actions *app.Actions, view func(state *app.State, act
 
 	render(state)
 
-	select {}
+	client.Run()
 }

@@ -5,6 +5,8 @@ import (
 )
 
 type Component interface {
-	SetState()
 	Render() *vdom.VNode
+	SetUpdateHandler(func())
 }
+
+type BaseComponent struct{}

@@ -10,7 +10,7 @@ import (
 	"github.com/speier/gowasm/pkg/vdom"
 )
 
-// inspired by https://github.com/jorgebucaran/superfine#usage
+// https://github.com/jorgebucaran/superfine#usage
 func main() {
 	var render func(state int)
 	view := func(count int) *vdom.VNode {
