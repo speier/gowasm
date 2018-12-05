@@ -18,7 +18,6 @@ import (
 )
 
 var (
-	// dev  = flag.Bool("dev", false, "run in dev mode to reload changes")
 	addr = flag.String("addr", ":8080", "listen address")
 )
 

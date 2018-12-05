@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"syscall/js"
 
-	"github.com/speier/gowasm/pkg/client"
 	"github.com/speier/gowasm/pkg/dom"
 	"github.com/speier/gowasm/pkg/vdom"
 
@@ -14,9 +13,8 @@ import (
 )
 
 func main() {
-	initState := []byte(dom.Window.Get("initialState").String())
-
 	var state *app.State
+	initState := []byte(dom.Window.Get("initialState").String())
 	json.Unmarshal(initState, &state)
 
 	actions := &app.Actions{}
@@ -24,18 +22,18 @@ func main() {
 }
 
 func App(state *app.State, actions *app.Actions, view func(state *app.State, actions *app.Actions) *vdom.VNode, container js.Value) {
-	renderFactory := func(view func(state *app.State, actions *app.Actions) *vdom.VNode, container js.Value) func(state *app.State) {
+	renderFactory := func(view func(state *app.State, actions *app.Actions) *vdom.VNode, container js.Value, node *vdom.VNode) func(state *app.State) {
 		return func(state *app.State) {
-			dom.Render(view(state, actions), container)
+			node = dom.Patch(node, view(state, actions), container)
 		}
 	}
 
-	render := renderFactory(view, container)
+	render := renderFactory(view, container, nil)
 
 	actions.State = state
 	actions.Update = func() { render(state) }
 
 	render(state)
 
-	client.Run()
+	select {}
 }

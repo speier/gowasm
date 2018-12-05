@@ -32,21 +32,3 @@ func View(state *State, actions *Actions) *vdom.VNode {
 		vdom.H("button", &vdom.Attrs{Events: &vdom.Events{"click": func() { actions.Up(1) }}}, vdom.Text("+")),
 	)
 }
-
-var Home HomeComponent
-
-type HomeComponent struct {
-	Message string
-}
-
-func (h HomeComponent) Render() string {
-	return `<h2>Home</h2>`
-}
-
-var About AboutComponent
-
-type AboutComponent struct{}
-
-func (a AboutComponent) Render() string {
-	return `<h2>About</h2>`
-}

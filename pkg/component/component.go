@@ -8,5 +8,3 @@ type Component interface {
 	Render() *vdom.VNode
 	SetUpdateHandler(func())
 }
-
-type BaseComponent struct{}

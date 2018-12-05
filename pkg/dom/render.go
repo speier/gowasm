@@ -10,21 +10,24 @@ import (
 var (
 	Window   = js.Global().Get("window")
 	Document = js.Global().Get("document")
-
-	_oldNode *vdom.VNode
 )
 
 func QuerySelector(selector string) js.Value {
 	return Document.Call("querySelector", selector)
 }
 
+// one time render
 func Render(node *vdom.VNode, container js.Value) {
-	_oldNode = nil
-	recycle(container)
-	_oldNode = Patch(_oldNode, node, container)
+	Patch(nil, node, container)
 }
 
 func Patch(oldNode *vdom.VNode, newNode *vdom.VNode, container js.Value) *vdom.VNode {
+	if container == js.Null() {
+		panic("container is null")
+	}
+	if oldNode == nil {
+		oldNode = recycle(nil, container)
+	}
 	patchElement(oldNode, newNode, container, 0)
 	return newNode
 }
@@ -89,17 +92,13 @@ func createElement(node *vdom.VNode) js.Value {
 	return el
 }
 
-func recycle(container js.Value) {
-	if _oldNode != nil {
-		return
-	}
-
+func recycle(n *vdom.VNode, container js.Value) *vdom.VNode {
 	el := container.Get("childNodes").Index(0)
 	if el.Type() == js.TypeUndefined {
-		return
+		return nil
 	}
 
-	_oldNode = &vdom.VNode{
+	n = &vdom.VNode{
 		TagName: strings.ToLower(el.Get("nodeName").String()),
 	}
 	childNodes := el.Get("childNodes")
@@ -108,12 +107,13 @@ func recycle(container js.Value) {
 		c := childNodes.Index(i)
 		if c.Get("nodeType").Int() == 3 {
 			// text node
-			_oldNode.Children = append(_oldNode.Children, &vdom.VNode{
+			n.Children = append(n.Children, &vdom.VNode{
 				Type:    vdom.TextNode,
 				TagName: c.Get("nodeValue").String(),
 			})
 		} else {
-			recycle(c)
+			recycle(n, c)
 		}
 	}
+	return n
 }

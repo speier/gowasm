@@ -12,13 +12,22 @@ import (
 // for stateless components
 // supports:
 //  - `*vdom.VNode`
-//  - `func() *vdom.VNode`
+//  - `func() *vdom.VNode` // not useful?
+//  - `chan *vdom.VNode`
 func Render(i interface{}, container js.Value) {
 	switch v := i.(type) {
 	case *vdom.VNode:
 		dom.Render(v, container)
 	case func() *vdom.VNode:
 		dom.Render(v(), container)
+	case chan *vdom.VNode:
+		go func() {
+			var node *vdom.VNode
+			for n := range v {
+				node = dom.Patch(node, n, container)
+			}
+		}()
+		run()
 	}
 }
 
