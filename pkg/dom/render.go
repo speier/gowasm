@@ -76,7 +76,7 @@ func createElement(node *vdom.VNode) js.Value {
 
 		if node.Attrs.Events != nil {
 			for eventName, handler := range *node.Attrs.Events {
-				callback := js.NewEventCallback(0, func(event js.Value) { handler() })
+				callback := js.NewEventCallback(1, func(event js.Value) { handler() })
 				el.Call("addEventListener", eventName, callback)
 			}
 		}

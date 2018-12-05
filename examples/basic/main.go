@@ -15,6 +15,7 @@ func main() {
 	// simple component
 	client.Render(HelloMessage("World!"), dom.QuerySelector("#s1"))
 	client.Render(TextBox("type here..."), dom.QuerySelector("#s2"))
+
 	// stateful component
 	go client.Mount(TimerFn(0), dom.QuerySelector("#s3"))
 	client.Mount(Timer(0), dom.QuerySelector("#s4"))

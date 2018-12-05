@@ -25,6 +25,18 @@ Questions:
   2. trigger re-render on event handlers callback, how about non UI interactions like fetch/xhr?
   3. wire actions like hyperapp: in go reflection might involved with this approach
 
+DX:
+
+```
+$ go get github.com/speier/gowasm
+
+$ mkdir -p myapp
+$ cd myapp
+
+$ gowasm serve
+
+```
+
 ### Separation of layers
 
 app:

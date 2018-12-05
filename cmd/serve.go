@@ -30,13 +30,13 @@ var (
 )
 
 func init() {
-	serveCmd.PersistentFlags().StringVarP(&addr, "addr", "a", ":8010", "listen address")
+	serveCmd.PersistentFlags().StringVarP(&addr, "listen", "l", ":8010", "listen address")
 	serveCmd.PersistentFlags().BoolVarP(&reload, "reload", "r", true, "reload changes")
 	rootCmd.AddCommand(serveCmd)
 }
 
 var serveCmd = &cobra.Command{
-	Use:   "serve",
+	Use:   "serve [directory]",
 	Short: "Run server for wasm",
 
 	Args: cobra.MaximumNArgs(1),
@@ -114,19 +114,23 @@ func static(box *rice.Box) http.HandlerFunc {
 }
 
 func wasm(dir string, name string) http.HandlerFunc {
+	build(dir, name, true)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		build(dir, name)
+		build(dir, name, false)
 		http.ServeFile(w, r, name)
 	})
 }
 
-func build(dir string, name string) {
+func build(dir string, name string, exit bool) {
 	log.Println("Building...")
 	start := time.Now()
 	res, err := run(fmt.Sprintf("go build -o %s %s", name, dir), "GOOS=js", "GOARCH=wasm")
 	elapsed := time.Since(start)
 	if err != nil {
-		log.Println("Build failed", res, err.Error())
+		log.Println("Build failed", res)
+		if exit {
+			os.Exit(1)
+		}
 	} else {
 		log.Println("Build done in", elapsed)
 	}

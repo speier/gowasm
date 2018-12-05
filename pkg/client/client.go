@@ -47,7 +47,9 @@ func Mount(i interface{}, container js.Value) {
 	case func() *vdom.VNode:
 		render = v
 	case func(func()) *vdom.VNode:
-		render = func() *vdom.VNode { return v(c.renderFunction) }
+		if v != nil {
+			render = func() *vdom.VNode { return v(c.renderFunction) }
+		}
 	case component.Component:
 		render = v.Render
 		v.SetUpdateHandler(c.renderFunction)
