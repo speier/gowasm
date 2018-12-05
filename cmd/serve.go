@@ -26,13 +26,11 @@ import (
 
 var (
 	addr   string
-	dir    string
 	reload bool
 )
 
 func init() {
 	serveCmd.PersistentFlags().StringVarP(&addr, "addr", "a", ":8010", "listen address")
-	serveCmd.PersistentFlags().StringVarP(&dir, "dir", "d", ".", "directory to serve")
 	serveCmd.PersistentFlags().BoolVarP(&reload, "reload", "r", true, "reload changes")
 	rootCmd.AddCommand(serveCmd)
 }
@@ -41,21 +39,31 @@ var serveCmd = &cobra.Command{
 	Use:   "serve",
 	Short: "Run server for wasm",
 
+	Args: cobra.MaximumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		box := rice.MustFindBox("static")
+		dir := "."
+		if len(args) == 1 {
+			dir = args[0]
+		}
 
-		r := chi.NewRouter()
+		dir, err := filepath.Abs(dir)
+		if err != nil {
+			log.Fatal("invalid directory", err)
+		}
 
 		name := tempFilename("gowasm_", ".wasm")
 		defer os.Remove(name)
 
-		r.Handle("/app.wasm", wasm(name))
+		box := rice.MustFindBox("static")
+		r := chi.NewRouter()
+
+		r.Handle("/app.wasm", wasm(dir, name))
 		r.Handle("/static/*", http.StripPrefix("/static/", static(box)))
-		r.NotFound(index(box))
+		r.NotFound(index(dir, box))
 
 		httpServer := &http.Server{Addr: addr, Handler: r}
 		defer shutdown(httpServer)
-		go start(httpServer)
+		go start(dir, httpServer)
 
 		sigint := make(chan os.Signal, 1)
 		signal.Notify(sigint, syscall.SIGINT, syscall.SIGTERM)
@@ -63,8 +71,13 @@ var serveCmd = &cobra.Command{
 	},
 }
 
-func start(httpServer *http.Server) {
-	log.Printf("Server listening on %s", addr)
+func start(dir string, httpServer *http.Server) {
+	a := httpServer.Addr
+	if strings.HasPrefix(a, ":") {
+		a = "localhost" + a
+	}
+	log.Printf("Server listening on http://%s", a)
+	log.Printf("Serving directory %s", dir)
 	if err := httpServer.ListenAndServe(); err != http.ErrServerClosed {
 		log.Fatal("http server failed to serve", err)
 	}
@@ -78,10 +91,10 @@ func shutdown(httpServer *http.Server) {
 	}
 }
 
-func index(box *rice.Box) http.HandlerFunc {
+func index(dir string, box *rice.Box) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// project have it's own index.html
-		projhtml := projectHtml()
+		projhtml := projectHtml(dir)
 		if len(projhtml) > 0 {
 			fmt.Fprint(w, projhtml)
 		} else {
@@ -100,14 +113,14 @@ func static(box *rice.Box) http.HandlerFunc {
 	})
 }
 
-func wasm(name string) http.HandlerFunc {
+func wasm(dir string, name string) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		build(name)
+		build(dir, name)
 		http.ServeFile(w, r, name)
 	})
 }
 
-func build(name string) {
+func build(dir string, name string) {
 	log.Println("Building...")
 	start := time.Now()
 	res, err := run(fmt.Sprintf("go build -o %s %s", name, dir), "GOOS=js", "GOARCH=wasm")
@@ -139,7 +152,7 @@ func tempFilename(prefix, suffix string) string {
 	return filepath.Join(os.TempDir(), prefix+hex.EncodeToString(randBytes)+suffix)
 }
 
-func projectHtml() string {
+func projectHtml(dir string) string {
 	name := filepath.Join(dir, "index.html") // other dirs/files and/or configurable?
 
 	_, err := os.Stat(name)
