@@ -19,6 +19,7 @@ import (
 	"time"
 
 	"github.com/GeertJohan/go.rice"
+	"github.com/PuerkitoBio/goquery"
 	"github.com/go-chi/chi"
 	"github.com/spf13/cobra"
 )
@@ -30,7 +31,7 @@ var (
 )
 
 func init() {
-	serveCmd.PersistentFlags().StringVarP(&addr, "addr", "a", ":8080", "listen address")
+	serveCmd.PersistentFlags().StringVarP(&addr, "addr", "a", ":8010", "listen address")
 	serveCmd.PersistentFlags().StringVarP(&dir, "dir", "d", ".", "directory to serve")
 	serveCmd.PersistentFlags().BoolVarP(&reload, "reload", "r", true, "reload changes")
 	rootCmd.AddCommand(serveCmd)
@@ -79,10 +80,17 @@ func shutdown(httpServer *http.Server) {
 
 func index(box *rice.Box) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		tmpl := template.Must(template.New("").Parse(box.MustString("index.html")))
-		tmpl.Execute(w, map[string]interface{}{
-			"title": "cli test",
-		})
+		// project have it's own index.html
+		projhtml := projectHtml()
+		if len(projhtml) > 0 {
+			fmt.Fprint(w, projhtml)
+		} else {
+			// use default builtin index.html for dev
+			tmpl := template.Must(template.New("").Parse(box.MustString("index.html")))
+			tmpl.Execute(w, map[string]interface{}{
+				"title": "GOWASM CLI",
+			})
+		}
 	})
 }
 
@@ -93,7 +101,6 @@ func static(box *rice.Box) http.HandlerFunc {
 }
 
 func wasm(name string) http.HandlerFunc {
-	build(name)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		build(name)
 		http.ServeFile(w, r, name)
@@ -130,4 +137,34 @@ func tempFilename(prefix, suffix string) string {
 	randBytes := make([]byte, 16)
 	rand.Read(randBytes)
 	return filepath.Join(os.TempDir(), prefix+hex.EncodeToString(randBytes)+suffix)
+}
+
+func projectHtml() string {
+	name := filepath.Join(dir, "index.html") // other dirs/files and/or configurable?
+
+	_, err := os.Stat(name)
+	if os.IsNotExist(err) {
+		return ""
+	}
+
+	f, err := os.Open(name)
+	if err != nil {
+		return ""
+	}
+	defer f.Close()
+
+	doc, err := goquery.NewDocumentFromReader(f)
+	if err != nil {
+		return ""
+	}
+
+	inject := `<script src="/static/wasm_exec.js"></script><script src="/static/wasm_inst.js"></script>`
+	doc.Find("body").AppendHtml(inject)
+
+	ret, err := doc.Html()
+	if err != nil {
+		return ""
+	}
+
+	return ret
 }

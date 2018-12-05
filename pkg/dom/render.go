@@ -35,6 +35,9 @@ func patchElement(oldNode *vdom.VNode, newNode *vdom.VNode, parent js.Value, ind
 	} else if oldNode == nil {
 		el := createElement(newNode)
 		parent.Call("appendChild", el)
+		if newNode.OnCreate != nil {
+			newNode.OnCreate()
+		}
 	} else if newNode == nil {
 		parent.Call("removeChild", parent.Get("childNodes").Index(index))
 	} else if changed(newNode, oldNode) {

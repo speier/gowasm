@@ -12,6 +12,12 @@ Main design goals:
 	}
 	```
 
+Lifecycle:
+
+1. `oncreate` _== componentDidMount_
+2. `onupdate` _== componentDidUpdate_
+3. `onremove` _== componentWillUnmount_
+
 Questions:
 
 - when and how to trigger re-render on state changes?

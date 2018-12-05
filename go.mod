@@ -2,6 +2,7 @@ module github.com/speier/gowasm
 
 require (
 	github.com/GeertJohan/go.rice v0.0.0-20170420135705-c02ca9a983da
+	github.com/PuerkitoBio/goquery v1.5.0
 	github.com/daaku/go.zipexe v0.0.0-20150329023125-a5fe2436ffcb // indirect
 	github.com/dlclark/regexp2 v1.1.6 // indirect
 	github.com/dop251/goja v0.0.0-20181125163413-2dd08a5fc665

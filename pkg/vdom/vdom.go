@@ -28,6 +28,12 @@ type VNode struct {
 	TagName  string
 	Attrs    *Attrs
 	Children []*VNode
+	// lifecycle
+	OnCreate func() // invoked after element created and attached to the DOM (react: componentDidMount)
+	OnUpdate func() // invoked after updating occurs, not called for the initial render (react: componentDidUpdate)
+	OnRemove func() // invoked before element removed from the DOM and destroyed (react: componentWillUnmount)
+	// key
+	Key string // help identify nodes when updating the DOM
 }
 
 // hyperscript-style API: h(tagName, attrs, children)

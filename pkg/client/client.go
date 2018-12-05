@@ -9,6 +9,10 @@ import (
 	"github.com/speier/gowasm/pkg/vdom"
 )
 
+// for stateless components
+// supports:
+//  - `*vdom.VNode`
+//  - `func() *vdom.VNode`
 func Render(i interface{}, container js.Value) {
 	switch v := i.(type) {
 	case *vdom.VNode:
@@ -18,12 +22,11 @@ func Render(i interface{}, container js.Value) {
 	}
 }
 
-type client struct {
-	updateScheduled bool
-	renderFunction  func()
-}
-
+// for stateful components
+// supports:
+//  - ...
 func Mount(i interface{}, container js.Value) {
+	// default render function, not rendering anything
 	render := func() *vdom.VNode { return nil }
 
 	c := &client{}
@@ -41,20 +44,25 @@ func Mount(i interface{}, container js.Value) {
 	}
 
 	switch v := i.(type) {
-	case component.Component:
-		render = v.Render
-		v.SetUpdateHandler(c.renderFunction)
 	case func() *vdom.VNode:
 		render = v
 	case func(func()) *vdom.VNode:
 		render = func() *vdom.VNode { return v(c.renderFunction) }
+	case component.Component:
+		render = v.Render
+		v.SetUpdateHandler(c.renderFunction)
 	}
 
 	c.renderFunction()
-
 	run()
 }
 
+type client struct {
+	updateScheduled bool
+	renderFunction  func()
+}
+
+// keep mounted app runing
 func run() {
 	done := make(chan bool)
 	unloading := js.NewEventCallback(js.PreventDefault, func(event js.Value) {
