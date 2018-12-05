@@ -4,7 +4,7 @@ Main design goals:
 
 - using virtual dom, supports rendering on the server
 - hyperscript style api `H` as a core building block for the virtual dom _(templating could based on this in the future)_
-- components start small, with a simple functional approach, each component is a single function returns a `VNode`
+- components start small, with simple functional approach, each component is a single function returns a `VNode`
 
 	```go
 	func Welcome(name string) *vdom.VNode {
@@ -12,30 +12,12 @@ Main design goals:
 	}
 	```
 
-Lifecycle:
-
-1. `oncreate` _== componentDidMount_
-2. `onupdate` _== componentDidUpdate_
-3. `onremove` _== componentWillUnmount_
-
 Questions:
 
 - when and how to trigger re-render on state changes?
   1. trigger manually from the component, with message passing for example
   2. trigger re-render on event handlers callback, how about non UI interactions like fetch/xhr?
   3. wire actions like hyperapp: in go reflection might involved with this approach
-
-DX:
-
-```
-$ go get github.com/speier/gowasm
-
-$ mkdir -p myapp
-$ cd myapp
-
-$ gowasm serve
-
-```
 
 ### Separation of layers
 

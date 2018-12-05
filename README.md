@@ -2,41 +2,63 @@
 
 Toolkit for building web apps with Go and WebAssembly.
 
-At the core of the toolkit it's a lightweight UI library, consist of a hyperscript style api for building virtual dom nodes.
+Modular packages, supports building virtual dom nodes with a hyperscript style api, rendering to HTML string on the server, and DOM elements in the browser.
 
-Modular components supports to render virtual dom nodes to an HTML string on the server, and DOM elements in the browser (with patching and possible hydration).
+Features:
+
+- virtual dom _(with patching and possible hydration)_
+- hyperscript
+- server-side rendering
+- routing
 
 ## Getting Started
 
 Install dependencies:
 
 ```sh
-$ GO111MODULE=on go get
+$ go get github.com/speier/gowasm
 ```
 
-Writing components:
+Write a component:
 
 ```go
+package main
+
+import (
+	"github.com/speier/gowasm/pkg/dom"
+	"github.com/speier/gowasm/pkg/vdom"
+)
+
 func main() {
 	view := vdom.H("div", nil,
 		vdom.H("h1", nil, vdom.Text("Hello World!")),
 	)
 
-	dom.Render(view, dom.QuerySelector("#root"))
+	dom.Render(view, dom.QuerySelector("body"))
 }
 ```
 
-## Examples
-
-To run the [isomorphic](examples/isomorphic) example generate WebAssembly:
+Run with dev server:
 
 ```sh
-$ go generate ./examples/isomorphic/...
+$ gowasm serve
 ```
 
-and run the server:
+
+## Examples
+
+To run the [basic](examples/basic) example with dev server:
 
 ```sh
+$ gowasm serve examples/basic
+```
+
+To run the [isomorphic](examples/isomorphic) example:
+
+```sh
+# generate wasm
+$ go generate ./examples/isomorphic/...
+# run the server
 $ go run examples/isomorphic/server.go
 ```
 
