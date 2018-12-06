@@ -9,10 +9,9 @@ import (
 	"github.com/speier/gowasm/pkg/vdom"
 )
 
-// for stateless components
 // supports:
 //  - `*vdom.VNode`
-//  - `func() *vdom.VNode` // not useful?
+//  - `func() *vdom.VNode`
 //  - `chan *vdom.VNode`
 func Render(i interface{}, container js.Value) {
 	switch v := i.(type) {
@@ -31,20 +30,21 @@ func Render(i interface{}, container js.Value) {
 	}
 }
 
-// for stateful components
 // supports:
-//  - ...
+//  - `func() *vdom.VNode
+//  - `Component`
 func Mount(i interface{}, container js.Value) {
 	// default render function, not rendering anything
 	render := func() *vdom.VNode { return nil }
 
-	c := &client{}
+	c := &renderContext{}
 	var reqAnimFrame js.Callback
+	var node *vdom.VNode
 	c.renderFunction = func() {
 		if !c.updateScheduled {
 			c.updateScheduled = true
 			reqAnimFrame = js.NewCallback(func(args []js.Value) {
-				dom.Render(render(), container)
+				node = dom.Patch(node, render(), container)
 				reqAnimFrame.Release()
 				c.updateScheduled = false
 			})
@@ -61,16 +61,20 @@ func Mount(i interface{}, container js.Value) {
 		}
 	case component.Component:
 		render = v.Render
-		v.SetUpdateHandler(c.renderFunction)
+		v.Init(c)
 	}
 
 	c.renderFunction()
 	run()
 }
 
-type client struct {
+type renderContext struct {
 	updateScheduled bool
 	renderFunction  func()
+}
+
+func (c *renderContext) Update() {
+	c.renderFunction()
 }
 
 // keep mounted app runing

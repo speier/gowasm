@@ -4,8 +4,9 @@ package main
 
 import (
 	"encoding/json"
-	"syscall/js"
 
+	"github.com/speier/gowasm/pkg/client"
+	"github.com/speier/gowasm/pkg/component"
 	"github.com/speier/gowasm/pkg/dom"
 	"github.com/speier/gowasm/pkg/vdom"
 
@@ -13,27 +14,49 @@ import (
 )
 
 func main() {
-	var state *app.State
-	initState := []byte(dom.Window.Get("initialState").String())
-	json.Unmarshal(initState, &state)
+	state := &app.State{}
+	actions := &app.Actions{State: state}
 
-	actions := &app.Actions{}
-	App(state, actions, app.View, dom.QuerySelector("#root"))
+	initState := dom.Window.Get("initialState").String()
+	json.Unmarshal([]byte(initState), state)
+
+	app := AppWrapper(state, actions, app.View)
+	client.Mount(app, dom.QuerySelector("#root"))
+
+	// App(state, actions, app.View, dom.QuerySelector("#root"))
 }
 
-func App(state *app.State, actions *app.Actions, view func(state *app.State, actions *app.Actions) *vdom.VNode, container js.Value) {
-	renderFactory := func(view func(state *app.State, actions *app.Actions) *vdom.VNode, container js.Value, node *vdom.VNode) func(state *app.State) {
-		return func(state *app.State) {
-			node = dom.Patch(node, view(state, actions), container)
-		}
-	}
+// func App(state *app.State, actions *app.Actions, view func(state *app.State, actions *app.Actions) *vdom.VNode, container js.Value) {
+// 	renderFactory := func() func(state *app.State) {
+// 		var node *vdom.VNode
+// 		return func(state *app.State) {
+// 			node = dom.Patch(node, view(state, actions), container)
+// 		}
+// 	}
 
-	render := renderFactory(view, container, nil)
+// 	render := renderFactory()
+// 	actions.Update = func() { render(state) }
+// 	render(state)
 
-	actions.State = state
-	actions.Update = func() { render(state) }
+// 	select {}
+// }
 
-	render(state)
+func AppWrapper(state *app.State, actions *app.Actions, view func(state *app.State, actions *app.Actions) *vdom.VNode) *AppComponent {
+	a := &AppComponent{state, actions, view}
+	actions.Update = func() { a.Render() }
+	return a
+}
 
-	select {}
+type AppComponent struct {
+	state   *app.State
+	actions *app.Actions
+	view    func(state *app.State, actions *app.Actions) *vdom.VNode
+}
+
+func (a *AppComponent) Init(ctx component.Context) {
+	a.actions.Update = ctx.Update
+}
+
+func (a *AppComponent) Render() *vdom.VNode {
+	return a.view(a.state, a.actions)
 }

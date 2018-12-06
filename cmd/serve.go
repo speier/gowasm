@@ -101,7 +101,7 @@ func index(dir string, box *rice.Box) http.HandlerFunc {
 			// use default builtin index.html for dev
 			tmpl := template.Must(template.New("").Parse(box.MustString("index.html")))
 			tmpl.Execute(w, map[string]interface{}{
-				"title": "GOWASM CLI",
+				"title": "Go WASM",
 			})
 		}
 	})

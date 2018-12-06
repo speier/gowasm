@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/speier/gowasm/pkg/client"
+	"github.com/speier/gowasm/pkg/component"
 	"github.com/speier/gowasm/pkg/dom"
 	"github.com/speier/gowasm/pkg/vdom"
 )
@@ -56,7 +57,7 @@ func TimerFn(seconds int) func(updateHandler func()) *vdom.VNode {
 
 type TimerComp struct {
 	seconds int
-	update  func()
+	ctx     component.Context
 }
 
 func Timer(seconds int) *TimerComp {
@@ -65,16 +66,16 @@ func Timer(seconds int) *TimerComp {
 	go func() {
 		for range ticker.C {
 			t.seconds++
-			t.update()
+			t.ctx.Update()
 		}
 	}()
 	return t
 }
 
-func (t *TimerComp) Render() *vdom.VNode {
-	return h("div", nil, h("Seconds: ", nil), h(strconv.Itoa(t.seconds), nil))
+func (t *TimerComp) Init(ctx component.Context) {
+	t.ctx = ctx
 }
 
-func (t *TimerComp) SetUpdateHandler(updateHandler func()) {
-	t.update = updateHandler
+func (t *TimerComp) Render() *vdom.VNode {
+	return h("div", nil, h("Seconds: ", nil), h(strconv.Itoa(t.seconds), nil))
 }
