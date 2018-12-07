@@ -85,7 +85,9 @@ func start(dir string, httpServer *http.Server) {
 
 func shutdown(httpServer *http.Server) {
 	log.Println("Server shutdown")
-	err := httpServer.Shutdown(context.Background())
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	err := httpServer.Shutdown(ctx)
 	if err != nil {
 		log.Fatal("error happened during http server shutdown", err)
 	}
